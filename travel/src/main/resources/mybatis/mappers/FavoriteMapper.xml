@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+   mapper标签:配置各类声明
+   namespace：名称空间，由于映射文件可能有多个，为了防止crud语句的唯一标识被重复，需要设置空间名称。
+ -->
+
+<mapper namespace="technicolor.travel.mapper.FavoriteMapper">
+
+    <!--根据rid查询是否被收藏-->
+    <select id="isFavoriteByRid" resultType="Favorite">
+      select * from tab_favorite where rid = #{rid} and uid = #{uid}
+   </select>
+
+    <!--添加收藏-->
+    <insert id="addFavorite">
+        INSERT INTO tab_favorite VALUE (#{rid},now(),#{uid})
+    </insert>
+
+    <!--更新收藏数量-->
+    <update id="updateRouteFavoriteNum">
+        update tab_route set count=count+1 where rid=#{rid}
+    </update>
+
+
+    <!--通过用户id查询个人收藏总记录数-->
+    <select id="queryFavoriteCount" resultType="Integer">
+        SELECT count(*) FROM tab_favorite WHERE uid=#{uid}
+    </select>
+
+
+    <!--自定义结果集-->
+    <resultMap id="favoriteAndRouteResultMap" type="Favorite" autoMapping="true">
+        <association property="route" javaType="Route" autoMapping="true">
+            <id column="rid" property="rid"></id>
+        </association>
+    </resultMap>
+
+    <!--查询当前页的个人收藏数据已经关联的路线信息-->
+    <select id="queryFavoriteListByPage" resultMap="favoriteAndRouteResultMap">
+        SELECT *
+          FROM tab_favorite f
+          INNER JOIN tab_route r ON f.rid = r.rid
+            WHERE uid=#{uid}
+              ORDER BY f.date DESC
+    </select>
+
+</mapper>
